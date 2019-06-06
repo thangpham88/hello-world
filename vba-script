@@ -1,0 +1,140 @@
+Sub ChangeToWoo()
+
+Change1Row
+
+If Range("A1").Value = "SKU" Then
+    Range("A:B").EntireColumn.Insert
+    Range("A1").Value = "ID"
+    Range("B1").Value = "Type"
+ElseIf Range("A1").Value = "ID" Then
+    Range("B1").Value = "Type"
+End If
+
+DelOnColHeader "Vendor"
+DelOnColHeader "Published"
+
+InsertMissingCOl
+UpdateProductType
+
+End Sub
+
+Sub Change1Row()
+    Rows("1").Replace _
+     What:="Handle", Replacement:="SKU", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Title", Replacement:="Name", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Body (HTML)", Replacement:="Description", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Type", Replacement:="Categories", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Image Src", Replacement:="Images", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Variant Price", Replacement:="Sale price", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Variant Compare At Price", Replacement:="Regular price", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Option1 Name", Replacement:="Attribute 1 name", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Option1 Value", Replacement:="Attribute 1 value(s)", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Option2 Name", Replacement:="Attribute 2 name", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Option2 Value", Replacement:="Attribute 2 value(s)", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Option3 Name", Replacement:="Attribute 3 name", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+    Rows("1").Replace _
+     What:="Option3 Value", Replacement:="Attribute 3 value(s)", _
+     SearchOrder:=xlByRows, MatchCase:=True
+
+End Sub
+
+Sub DelOnColHeader(colNameToDel As String)
+    Dim A As Range
+    Set A = Rows(1).Find(What:=colNameToDel, LookIn:=xlValues, lookat:=xlPart)
+    If Not A Is Nothing Then
+        A.EntireColumn.Delete
+    End If
+End Sub
+
+Sub InsertMissingCOl()
+If Range("E1").Value = "Description" Then
+    Range("E1").EntireColumn.Insert
+    Range("E1").Value = "Parent"
+End If
+If Range("O1").Value = "Variant SKU" Then
+    Range("O1").EntireColumn.Insert
+    Range("O1").Value = "Swatches Attributes"
+End If
+End Sub
+
+Sub UpdateProductType()
+    Dim LastRow As Long
+    Dim i As Long
+    LastRow = Range("C" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        If (IsEmpty(Range("C" & i).Value) = False) And (IsEmpty(Range("D" & i).Value) = False) Then
+            Range("B" & i).Value = "variable"
+        ElseIf (IsEmpty(Range("C" & i).Value) = False) And (IsEmpty(Range("D" & i).Value) = True) Then
+            Range("B" & i).Value = "variation"
+        End If
+    Next i
+
+    UpdateParrent
+    UpdateName
+End Sub
+
+Sub UpdateParrent()
+    Dim LastRow As Long
+    Dim i As Long
+    LastRow = Range("C" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        If (Range("B" & i).Value = "variation") And (IsEmpty(Range("C" & i).Value) = False) And (IsEmpty(Range("E" & i).Value) = True) Then
+            Range("E" & i).Value = Range("C" & i).Value
+            Range("C" & i).Value = ""
+        End If
+    Next i
+End Sub
+
+Sub UpdateName()
+    Dim LastRow As Long
+    Dim i As Long
+    Dim RecentName As String
+    LastRow = Range("C" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        If (Range("B" & i).Value = "variable") Then
+            RecentName = Range("D" & i).Value
+        End If
+        If (Range("B" & i).Value = "variation") And (IsEmpty(Range("D" & i).Value) = True) Then
+            If (Range("I" & i).Value = "Size") Then
+                Range("D" & i).Value = RecentName & " - " & Range("J" & i).Value
+            ElseIf (Range("K" & i).Value = "Size") Then
+                Range("D" & i).Value = RecentName & " - " & Range("L" & i).Value
+            End If
+        End If
+    Next i
+End Sub
