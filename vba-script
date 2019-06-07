@@ -86,9 +86,9 @@ If Range("E1").Value = "Description" Then
     Range("E1").EntireColumn.Insert
     Range("E1").Value = "Parent"
 End If
-If Range("O1").Value = "Variant SKU" Then
-    Range("O1").EntireColumn.Insert
-    Range("O1").Value = "Swatches Attributes"
+If Range("P1").Value = "Variant SKU" Then
+    Range("P1").EntireColumn.Insert
+    Range("P1").Value = "Swatches Attributes"
 End If
 End Sub
 
@@ -135,6 +135,20 @@ Sub UpdateName()
             ElseIf (Range("K" & i).Value = "Size") Then
                 Range("D" & i).Value = RecentName & " - " & Range("L" & i).Value
             End If
+        End If
+    Next i
+End Sub
+
+Sub UpdateChild()
+    Dim LastRow As Long
+    Dim i As Long
+    Dim RecentName As String
+    LastRow = Range("C" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        If (Range("B" & i).Value = "variable") And (Range("B" & (i - 1)).Value = "variation") Then
+            Range("B" & i).EntireRow.Copy
+            Range(Range("B" & i).Offset(1, 0), Range("B" & i).Offset(1, 0)).EntireRow.Insert Shift:=xlDown
+            Application.CutCopyMode = False
         End If
     Next i
 End Sub
