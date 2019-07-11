@@ -86,10 +86,16 @@ If Range("E1").Value = "Description" Then
     Range("E1").EntireColumn.Insert
     Range("E1").Value = "Parent"
 End If
-If Range("P1").Value = "Variant SKU" Then
-    Range("P1").EntireColumn.Insert
-    Range("P1").Value = "Swatches Attributes"
-End If
+Range("AZ1").Value = "Swatches Attributes"
+Range("BA1").Value = "Attribute 1 visible"
+Range("BB1").Value = "Attribute 1 global"
+Range("BC1").Value = "Attribute 1 default"
+Range("BD1").Value = "Attribute 2 visible"
+Range("BE1").Value = "Attribute 2 global"
+Range("BF1").Value = "Attribute 2 default"
+
+
+
 End Sub
 
 Sub UpdateProductType()
@@ -105,13 +111,42 @@ Sub UpdateProductType()
     Next i
 
     UpdateParrent
-    UpdateName
+    'UpdateChild
+    'UpdateName
+    'UpdateAttribute
+    'UpdateSKU
+
+
+End Sub
+
+Sub UpdateSKU()
+    Dim LastRow As Long
+    Dim i As Long
+    Dim sku As Long
+    Dim tmp As String
+
+    sku = 110000
+    LastRow = Range("B" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        If (Range("B" & i).Value = "variable") And (IsEmpty(Range("C" & i).Value) = False) Then
+            Range("C" & i).Value = "sku_" & sku
+            sku = sku + 1
+        End If
+    Next i
+    For i = 2 To LastRow
+        If (Range("B" & i).Value = "variable") And (IsEmpty(Range("C" & i).Value) = False) Then
+            tmp = Range("C" & i).Value
+        End If
+        If (Range("B" & i).Value = "variation") Then
+            Range("E" & i).Value = tmp
+        End If
+    Next i
 End Sub
 
 Sub UpdateParrent()
     Dim LastRow As Long
     Dim i As Long
-    LastRow = Range("C" & Rows.Count).End(xlUp).Row
+    LastRow = Range("B" & Rows.Count).End(xlUp).Row
     For i = 2 To LastRow
         If (Range("B" & i).Value = "variation") And (IsEmpty(Range("C" & i).Value) = False) And (IsEmpty(Range("E" & i).Value) = True) Then
             Range("E" & i).Value = Range("C" & i).Value
@@ -120,21 +155,115 @@ Sub UpdateParrent()
     Next i
 End Sub
 
+Sub UpdateAttribute()
+    Dim LastRow As Long
+    Dim i As Long
+    Dim j As Long
+    LastRow = Range("B" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        If (Range("B" & i).Value = "variable") Then
+            j = i
+            Range("J" & j).Value = Range("J" & (j + 1)).Value
+            Range("L" & j).Value = Range("L" & (j + 1)).Value
+            Range("N" & j).Value = Range("N" & (j + 1)).Value
+        Else
+            If (InStr(Range("J" & j).Value, Range("J" & i).Value) = 0) And (IsEmpty(Range("J" & i).Value) = False) Then
+                Range("J" & j).Value = Range("J" & j).Value & ", " & Range("J" & i).Value
+            End If
+
+            If (InStr(Range("L" & j).Value, Range("L" & i).Value) = 0) And (IsEmpty(Range("L" & i).Value) = False) Then
+                Range("L" & j).Value = Range("L" & j).Value & ", " & Range("L" & i).Value
+            End If
+
+            If (InStr(Range("N" & j).Value, Range("N" & i).Value) = 0) And (IsEmpty(Range("N" & i).Value) = False) Then
+                Range("N" & j).Value = Range("N" & j).Value & ", " & Range("N" & i).Value
+            End If
+
+            If (InStr(Range("AA" & j).Value, Range("AA" & i).Value) = 0) And (IsEmpty(Range("AA" & i).Value) = False) Then
+                Range("AA" & j).Value = Range("AA" & j).Value & ", " & Range("AA" & i).Value
+            End If
+
+        End If
+    Next i
+
+    UpdateAttribute2
+    UpdateImages
+
+End Sub
+
+Sub UpdateAttribute2()
+    Dim LastRow As Long
+    Dim i As Long
+    LastRow = Range("B" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        Range("BA" & i).Value = "1"
+        Range("BB" & i).Value = "1"
+        Range("BD" & i).Value = "1"
+        Range("BE" & i).Value = "1"
+        Range("BG" & i).Value = "1"
+        Range("BH" & i).Value = "1"
+
+
+        If (Range("B" & i).Value = "variable") Then
+            Range("BC" & i).Value = "L"
+            Range("BF" & i).Value = Range("L" & (i + 1)).Value
+            Range("BI" & i).Value = Range("N" & (i + 1)).Value
+
+        End If
+    Next i
+End Sub
+
+Sub UpdateImages()
+ Dim LastRow As Long
+    Dim i As Long
+    Dim j As Long
+    LastRow = Range("B" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        If (Range("B" & i).Value = "variable") Then
+            j = i
+        Else
+            If (InStr(Range("Y" & j).Value, Range("Y" & i).Value) = 0) And (IsEmpty(Range("Y" & i).Value) = False) Then
+                Range("Y" & j).Value = Range("Y" & j).Value & ", " & Range("Y" & i).Value
+            End If
+
+        End If
+    Next i
+
+End Sub
+
 Sub UpdateName()
     Dim LastRow As Long
     Dim i As Long
     Dim RecentName As String
-    LastRow = Range("C" & Rows.Count).End(xlUp).Row
+    LastRow = Range("B" & Rows.Count).End(xlUp).Row
     For i = 2 To LastRow
         If (Range("B" & i).Value = "variable") Then
             RecentName = Range("D" & i).Value
         End If
-        If (Range("B" & i).Value = "variation") And (IsEmpty(Range("D" & i).Value) = True) Then
-            If (Range("I" & i).Value = "Size") Then
+        If (Range("B" & i).Value = "variation") Then
+            If (IsEmpty(Range("J" & i).Value) = False) Then
                 Range("D" & i).Value = RecentName & " - " & Range("J" & i).Value
-            ElseIf (Range("K" & i).Value = "Size") Then
-                Range("D" & i).Value = RecentName & " - " & Range("L" & i).Value
             End If
+            If (IsEmpty(Range("L" & i).Value) = False) Then
+                Range("D" & i).Value = Range("D" & i).Value & " - " & Range("L" & i).Value
+            End If
+            If (IsEmpty(Range("N" & i).Value) = False) Then
+                Range("D" & i).Value = Range("D" & i).Value & " - " & Range("N" & i).Value
+            End If
+
+        End If
+    Next i
+End Sub
+
+Sub Trick()
+    Dim LastRow As Long
+    Dim i As Long
+    LastRow = Range("B" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        If (Range("B" & i).Value = "variable") Then
+            Range("G" & i).Value = Range("G" & (i + 1)).Value
+        Else
+            Range("G" & i).Value = ""
         End If
     Next i
 End Sub
@@ -143,12 +272,15 @@ Sub UpdateChild()
     Dim LastRow As Long
     Dim i As Long
     Dim RecentName As String
-    LastRow = Range("C" & Rows.Count).End(xlUp).Row
-    For i = 2 To LastRow
-        If (Range("B" & i).Value = "variable") And (Range("B" & (i - 1)).Value = "variation") Then
+    LastRow = Range("B" & Rows.Count).End(xlUp).Row
+    For i = 58737 To LastRow
+        If (Range("B" & i).Value = "variation") And (Range("B" & (i - 1)).Value = "variable") Then
             Range("B" & i).EntireRow.Copy
             Range(Range("B" & i).Offset(1, 0), Range("B" & i).Offset(1, 0)).EntireRow.Insert Shift:=xlDown
             Application.CutCopyMode = False
+            Range("J" & i).Value = Range("J" & (i - 1)).Value
+            Range("L" & i).Value = Range("L" & (i - 1)).Value
+            Range("N" & i).Value = Range("N" & (i - 1)).Value
         End If
     Next i
 End Sub
