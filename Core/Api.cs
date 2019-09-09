@@ -16,11 +16,12 @@ namespace ShopifyScraper
         // Returns JSON string
         public static string GET(string url)
         {
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.UseDefaultCredentials = true;
             request.UserAgent = "Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 70.0.3538.77 Safari / 537.36";
-            ServicePointManager.Expect100Continue = true;
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             try
             {
@@ -64,9 +65,9 @@ namespace ShopifyScraper
         public string title { get; set; }
         public string handle { get; set; }
         public string body_html { get; set; }
-        public DateTime published_at { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
+        public string published_at { get; set; }
+        public string created_at { get; set; }
+        public string updated_at { get; set; }
         public string vendor { get; set; }
         public string product_type { get; set; }
         public string[] tags { get; set; }
@@ -92,8 +93,8 @@ namespace ShopifyScraper
         public string compare_at_price { get; set; }
         public int position { get; set; }
         public long product_id { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
+        public string created_at { get; set; }
+        public string updated_at { get; set; }
     }
 
     public class Featured_Image
@@ -101,8 +102,8 @@ namespace ShopifyScraper
         public long id { get; set; }
         public long product_id { get; set; }
         public int position { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
+        public string created_at { get; set; }
+        public string updated_at { get; set; }
         public object alt { get; set; }
         public int width { get; set; }
         public int height { get; set; }
@@ -113,9 +114,9 @@ namespace ShopifyScraper
     public class Image
     {
         public long id { get; set; }
-        public DateTime created_at { get; set; }
+        public string created_at { get; set; }
         public int position { get; set; }
-        public DateTime updated_at { get; set; }
+        public string updated_at { get; set; }
         public long product_id { get; set; }
         public long[] variant_ids { get; set; }
         public string src { get; set; }
