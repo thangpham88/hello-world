@@ -27,9 +27,9 @@ namespace ShopifyScraper
             try
             {
                 bool isExist = File.Exists(path);
-                fs = new FileStream(path, !isExist ? FileMode.Create : FileMode.Append, FileAccess.Write);
+                fs = new FileStream(path, !isExist ? FileMode.CreateNew : FileMode.Create, FileAccess.Write);
                 wr = new StreamWriter(fs);
-                if (!isExist)
+                //if (!isExist)
                 {
                     wr.WriteLine(string.Join(",", Headers.Select(h => MakeupText(h))));
                     wr.Flush();
