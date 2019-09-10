@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShopifyScraper
+namespace Copycat
 {
     public class ShopifyExport : AbstractCsvExport
     {
         public override string[] Headers => new string[]
-            { "Handle", "Title", "Body (HTML)", "Vendor", "Type", "Tags", "Published", "Option1 Name", "Option1 Value", "Option2 Name", "Option2 Value", "Option3 Name", "Option3 Value", "Variant SKU", "Variant Grams", "Variant Inventory Tracker", "Variant Inventory Qty", "Variant Inventory Policy", "Variant Fulfillment Service", "Variant Price", "Variant Compare At Price", "Variant Requires Shipping", "Variant Taxable", "Variant Barcode", "Image Src", "Image Alt Text", "Gift Card", "Google Shopping / MPN", "Google Shopping / Age Group", "Google Shopping / Gender", "Google Shopping / Google Product Category", "SEO Title", "SEO Description", "Google Shopping / AdWords Grouping", "Google Shopping / AdWords Labels", "Google Shopping / Condition", "Google Shopping / Custom Product", "Google Shopping / Custom Label 0", "Google Shopping / Custom Label 1", "Google Shopping / Custom Label 2", "Google Shopping / Custom Label 3", "Google Shopping / Custom Label 4", "Variant Image", "Variant Weight Unit" };
+            { "Handle", "Title", "Body (HTML)", "Vendor", "Type", "Tags", "Published", "Option1 Name", "Option1 Value", "Option2 Name", "Option2 Value", "Option3 Name", "Option3 Value", "Variant SKU", "Variant Grams", "Variant Inventory Tracker", "Variant Inventory Qty", "Variant Inventory Policy", "Variant Fulfillment Service", "Variant Price", "Variant Compare At Price", "Variant Requires Shipping", "Variant Taxable", "Variant Barcode", "Image Src", "Image Position", "Image Alt Text", "Gift Card", "Google Shopping / MPN", "Google Shopping / Age Group", "Google Shopping / Gender", "Google Shopping / Google Product Category", "SEO Title", "SEO Description", "Google Shopping / AdWords Grouping", "Google Shopping / AdWords Labels", "Google Shopping / Condition", "Google Shopping / Custom Product", "Google Shopping / Custom Label 0", "Google Shopping / Custom Label 1", "Google Shopping / Custom Label 2", "Google Shopping / Custom Label 3", "Google Shopping / Custom Label 4", "Variant Image", "Variant Weight Unit" };
 
         public override string Name => "Shopify";
 
@@ -38,10 +38,10 @@ namespace ShopifyScraper
                             handle, // Handle
                             first?title:string.Empty, // Title
                             first?body:string.Empty, // Body (HTML)
-                            "", // Vendor
+                            first?vendor:string.Empty, // Vendor
                             "", // Type
                             "", // tag
-                            "", // Published
+                            first?"TRUE":string.Empty, // Published
                             first?op1Name:string.Empty, // Option1 Name
                             item.option1, // Option1 Value
                             first?op2Name:string.Empty, // Option2 Name
@@ -49,19 +49,20 @@ namespace ShopifyScraper
                             first?op3Name:string.Empty, // Option3 Name
                             item.option3, // Option3 Value
                             item.sku, // Variant SKU
-                            "", // Variant Grams
+                            "0", // Variant Grams
                             "", // Variant Inventory Tracker
                             "1", // Variant Inventory Qty
                             "deny", // Variant Inventory Policy
                             "manual", // Variant Fulfillment Service
                             item.price,
                             item.compare_at_price,
-                            "", // Variant Requires Shipping
-                            "", // Variant Taxable
+                            "TRUE", // Variant Requires Shipping
+                            "TRUE", // Variant Taxable
                             "", // Variant Barcode
                             item.position < imageLength? product.images[item.position].src: string.Empty, // Image Src
+                            item.position < imageLength? item.position.ToString(): string.Empty, // Image Position
                             "", // Image Alt Text
-                            "", // Gift Card
+                            first?"FALSE":string.Empty, // Gift Card
                             "", // Google Shopping / MPN
                             "", // Google Shopping / Age Group
                             "", // Google Shopping / Gender
@@ -78,7 +79,7 @@ namespace ShopifyScraper
                             "", // Google Shopping / Custom Label 3
                             "", // Google Shopping / Custom Label 4
                             item.featured_image.src, // Variant Image
-                            "", // Variant Weight Unit
+                            "kg", // Variant Weight Unit
 
                         };
                         list.Add(rowtemp);
