@@ -7,21 +7,37 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShopifyScraper
+namespace Copycat
 {
-    public class Sraper
+    public class Scraper
     {
-        public Product[] products { get; set; }
+        public Product[] Products { get; set; }
+        public static Agent[] Agents { get; set; }
+
+        static Scraper()
+        {
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            var agentList = Scraper._download_serialized_json_data_file<AgentList>("agent_list.json");
+            Agents = agentList.agents;
+        }
 
         // Returns JSON string
         public static string GET(string url)
         {
-            ServicePointManager.Expect100Continue = true;
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.UseDefaultCredentials = true;
-            request.UserAgent = "Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 70.0.3538.77 Safari / 537.36";
+
+            if (Agents != null)
+            {
+                Random rd = new Random();
+                int x = rd.Next(1, Agents.Length);
+                request.UserAgent = Agents[x].agent_string;
+            }
+            else
+            {
+                request.UserAgent = "Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 70.0.3538.77 Safari / 537.36";
+            }
 
             try
             {
@@ -57,6 +73,34 @@ namespace ShopifyScraper
             // if string with JSON data is not empty, deserialize it to class and return its instance 
             return !string.IsNullOrEmpty(json_data) ? JsonConvert.DeserializeObject<T>(json_data) : new T();
         }
+
+        public static T _download_serialized_json_data_file<T>(string filePath) where T : new()
+        {
+            var json_data = string.Empty;
+            // attempt to download JSON data as a string
+            try
+            {
+                json_data = File.ReadAllText(filePath);
+            }
+            catch (Exception ex) { }
+            // if string with JSON data is not empty, deserialize it to class and return its instance 
+            return !string.IsNullOrEmpty(json_data) ? JsonConvert.DeserializeObject<T>(json_data) : new T();
+        }
+    }
+
+    public class AgentList
+    {
+        public Agent[] agents { get; set; }
+    }
+
+    public class Agent
+    {
+        public string agent_string { get; set; }
+        public string agent_type { get; set; }
+        public string agent_name { get; set; }
+        public string os_type { get; set; }
+        public string os_name { get; set; }
+        public string device_type { get; set; }
     }
 
     public class Product
@@ -131,4 +175,3 @@ namespace ShopifyScraper
         public string[] values { get; set; }
     }
 }
-
