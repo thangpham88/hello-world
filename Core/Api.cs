@@ -1,3 +1,4 @@
+using HtmlAgilityPack;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -5,21 +6,51 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Copycat
+namespace ShopifyScraper
 {
     public class Scraper
     {
-        public Product[] Products { get; set; }
-        public static Agent[] Agents { get; set; }
+        public Product[] products { get; set; }
+        public static Agent[] agents { get; set; }
 
         static Scraper()
         {
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             var agentList = Scraper._download_serialized_json_data_file<AgentList>("agent_list.json");
-            Agents = agentList.agents;
+            agents = agentList.agents;
+        }
+
+        public static int GET_MAX_ITEMS(string url)
+        {
+            int num = 0;
+            string targetUrl = url.Contains("/collections/all")? url: url + "/collections/all";
+            HtmlWeb htmlWeb = new HtmlWeb()
+            {
+                AutoDetectEncoding = false,
+                OverrideEncoding = Encoding.UTF8 
+            };
+
+            HtmlDocument document = htmlWeb.Load(targetUrl);
+            var max_html = document.DocumentNode.SelectNodes("//span[@class='sp_result_html']").First();
+            string input = max_html.ChildNodes[0].InnerHtml;
+            // Split on one or more non-digit characters.
+            string[] numbers = Regex.Split(input, @"\D+");
+            if (numbers != null && numbers.Length > 0)
+            {
+                for (int i = numbers.Length - 1; i > 0; i--)
+                {
+                    if (numbers[i].Length > 0)
+                    {
+                        num = int.Parse(numbers[i]);
+                        break;
+                    }
+                }
+            }
+            return num;
         }
 
         // Returns JSON string
@@ -28,11 +59,11 @@ namespace Copycat
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.UseDefaultCredentials = true;
 
-            if (Agents != null)
+            if (agents != null)
             {
                 Random rd = new Random();
-                int x = rd.Next(1, Agents.Length);
-                request.UserAgent = Agents[x].agent_string;
+                int x = rd.Next(1, agents.Length);
+                request.UserAgent = agents[x].agent_string;
             }
             else
             {
