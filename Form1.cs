@@ -18,8 +18,9 @@ namespace ShopifyScraper
     public partial class Form1 : Form
     {
         private List<Product> products;
-        private int limit = 25;
+        private int limit = 10;
         private int page = 1;
+        private string urlinput;
         public static int MAX_PRODUCTS = 100000;
         public static string PRODUCTS_JSON = "/products.json?limit={0}&page={1}";
         private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
@@ -39,7 +40,6 @@ namespace ShopifyScraper
                 running = true;
                 InitData();
                 textBox2.Text = "== Loading time ==\r\n";
-                string urlinput = textBox1.Text.Trim();
 
                 // what to do in the background thread
                 bw.DoWork += new DoWorkEventHandler(
@@ -50,11 +50,10 @@ namespace ShopifyScraper
                     bool finished = false;
                     do
                     {
-                        // do some simple processing for 10 seconds
                         string url = urlinput + string.Format(PRODUCTS_JSON, limit, page);
                         finished = Read_JSON(url);
                         // report the progress in percent
-                        b.ReportProgress(page % 10 * 10);
+                        b.ReportProgress(page * limit / (MAX_PRODUCTS * 100));
                         if (page++ >= MAX_PRODUCTS)
                             finished = true;
 
@@ -67,13 +66,9 @@ namespace ShopifyScraper
                 bw.ProgressChanged += new ProgressChangedEventHandler(
                 delegate (object o, ProgressChangedEventArgs args)
                 {
-                    if (toolStripProgressBar1 != null)
+                    if (textBox2 != null)
                     {
-                        toolStripProgressBar1.Value = args.ProgressPercentage;
-                    }
-                    if (toolStripStatusLabel1 != null)
-                    {
-                        toolStripStatusLabel1.Text = string.Format("Imported {0} products...", products.Count);
+                        textBox2.Text = string.Format("Imported {0} / {1} products...", products.Count, MAX_PRODUCTS);
                     }
                 });
 
@@ -85,13 +80,13 @@ namespace ShopifyScraper
 
                     if (products.Count > 0)
                     {
-                        button2.Enabled = true;
                         textBox2.Text = string.Format("== Finished importing {0} products ==\r\n", products.Count);
                         EnableExport(true);
                     }
                     else
                     {
-                        button2.Enabled = false;
+                        textBox2.Text = string.Format("== Failed to load products ==\r\n", urlinput);
+                        EnableExport(false);
                     }
                 });
 
@@ -102,7 +97,8 @@ namespace ShopifyScraper
                 if (button1.Text == "Resume")
                 {
                     running = true;
-                    bw.RunWorkerAsync();
+                    if (!bw.IsBusy)
+                        bw.RunWorkerAsync();
                     button1.Text = "Stop";
                     EnableExport(false);
                 }
@@ -128,6 +124,9 @@ namespace ShopifyScraper
             bw = new BackgroundWorker();
             // this allows our worker to report progress during work
             bw.WorkerReportsProgress = true;
+
+            urlinput = textBox1.Text.Trim();
+            MAX_PRODUCTS = Scraper.GET_MAX_ITEMS(urlinput);
         }
 
         public bool Read_JSON(string url)
@@ -138,7 +137,7 @@ namespace ShopifyScraper
 
             try
             {
-                var scraper = ShopifyScraper.Sraper._download_serialized_json_data<Sraper>(url);
+                var scraper = ShopifyScraper.Scraper._download_serialized_json_data<Scraper>(url);
                 products.AddRange(scraper.products);
                 result = "Downloading data of " + products.Count + " products ...";
                 if (scraper.products == null || scraper.products.Length == 0)
@@ -147,6 +146,7 @@ namespace ShopifyScraper
             catch (Exception ex)
             {
                 // silence is gold.
+                isDone = true;
             }
 
             // textBox2.Text += result + "\r\n";
@@ -156,7 +156,16 @@ namespace ShopifyScraper
 
         private void button2_Click(object sender, EventArgs e)
         {
-            ExportCSV("products.csv");
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = "CSV File|*.csv|All Files|*.*";
+            saveFileDialog1.Title = "Save products to CSV file";
+            saveFileDialog1.ShowDialog();
+
+            // If the file name is not an empty string open it for saving.
+            if (saveFileDialog1.FileName != "")
+            {
+                ExportCSV(saveFileDialog1.FileName);
+            }
         }
 
         public async void ExportCSV(string path)
