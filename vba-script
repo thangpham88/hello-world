@@ -94,8 +94,6 @@ Range("BD1").Value = "Attribute 2 visible"
 Range("BE1").Value = "Attribute 2 global"
 Range("BF1").Value = "Attribute 2 default"
 
-
-
 End Sub
 
 Sub UpdateProductType()
@@ -126,7 +124,17 @@ Sub ChangePriceA()
             Range("J" & i).Value = Range("J" & i).Value + 5
         End If
     Next i
+End Sub
 
+Sub UpdateTitle()
+    Dim LastRow As Long
+    Dim i As Long
+    LastRow = Range("A" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        If (IsEmpty(Range("B" & i).Value) = False) And (InStr(Range("B" & i).Value, "2019") > 0) Then
+            Range("B" & i).Value = RTrim(Range("B" & i).Value) + " 2019-20"
+        End If
+    Next i
 End Sub
 
 Sub UpdateSKU()
