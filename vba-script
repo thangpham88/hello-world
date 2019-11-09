@@ -115,7 +115,17 @@ Sub UpdateProductType()
     'UpdateName
     'UpdateAttribute
     'UpdateSKU
+End Sub
 
+Sub ChangePriceA()
+    Dim LastRow As Long
+    Dim i As Long
+    LastRow = Range("A" & Rows.Count).End(xlUp).Row
+    For i = 2 To LastRow
+        If (Range("H" & i).Value = "3XL") Then
+            Range("J" & i).Value = Range("J" & i).Value + 5
+        End If
+    Next i
 
 End Sub
 
