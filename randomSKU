@@ -1,0 +1,29 @@
+add_filter( 'init', 'update_sku', 10, 1);
+
+function update_sku( $sku ){
+
+	$args = array(
+			'post_type' => 'product',
+			'posts_per_page' => 12
+			);
+	$i = 0;
+	$loop = new WP_Query( $args );
+
+	if ( $loop->have_posts() ) {
+		while ( $loop->have_posts() ) : $loop->the_post();
+
+			$random_sku = generateRandomString(12);
+
+			update_post_meta($loop->post->ID,'_sku',$random_sku);
+
+			$i++;
+		endwhile;
+	} else {
+		echo __( 'No products found' );
+	}
+	wp_reset_postdata();
+}
+
+function generateRandomString($length = 10) {
+    return substr(str_shuffle(str_repeat($x='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', ceil($length/strlen($x)) )),1,$length);
+}
