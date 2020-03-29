@@ -2,14 +2,14 @@ add_filter( 'init', 'update_sku', 10, 1);
 
 function update_sku( $sku ){
 
+	$i = 0;
 	$args = array(
 			'post_type' => 'product',
 			'posts_per_page' => 12
 			);
-	$i = 0;
 	$loop = new WP_Query( $args );
 
-	if ( $loop->have_posts() ) {
+	while($loop->have_posts()) {
 		while ( $loop->have_posts() ) : $loop->the_post();
 
 			$random_sku = generateRandomString(12);
@@ -18,9 +18,15 @@ function update_sku( $sku ){
 
 			$i++;
 		endwhile;
-	} else {
-		echo __( 'No products found' );
+		
+		$args = array(
+			'post_type' => 'product',
+			'posts_per_page' => 12,
+			'offset' => $i*12
+			);
+		$loop = new WP_Query( $args );
 	}
+	
 	wp_reset_postdata();
 }
 
