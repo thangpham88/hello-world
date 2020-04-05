@@ -1,31 +1,22 @@
-add_filter( 'init', 'update_sku', 10, 1);
+add_action( 'action_scheduler_run_queue', 'update_sku' );
 
 function update_sku( $sku ){
-
-	$i = 0;
-	$args = array(
-			'post_type' => 'product',
-			'posts_per_page' => 12
-			);
-	$loop = new WP_Query( $args );
-
-	while($loop->have_posts()) {
-		while ( $loop->have_posts() ) : $loop->the_post();
-
-			$random_sku = generateRandomString(12);
-
-			update_post_meta($loop->post->ID,'_sku',$random_sku);
-
-			$i++;
-		endwhile;
-		
-		$args = array(
-			'post_type' => 'product',
-			'posts_per_page' => 12,
-			'offset' => $i*12
-			);
-		$loop = new WP_Query( $args );
+	$sku_counter = get_transient( 'SKU_COUNTER_2' );
+	if ( false === $sku_counter ) {
+		$sku_counter = 0;
 	}
+	$args = array(
+		'post_type' => 'product',
+		'posts_per_page' => 1000,
+		'offset' => $sku_counter
+		);
+	$loop = new WP_Query( $args );
+	while ( $loop->have_posts() ) : $loop->the_post();
+		$random_sku = generateRandomString(12);
+		update_post_meta($loop->post->ID,'_sku',$random_sku);
+		$sku_counter++;
+	endwhile;
+	set_transient( 'SKU_COUNTER_2', $sku_counter );
 	
 	wp_reset_postdata();
 }
